@@ -84,6 +84,14 @@ function headers(visitor, token, email) {
   }
 }
 (async () => {
+   const Phone = readline.question(
+        chalk.yellowBright(`[ ???? ] `) +
+          "Input Number Not Include ( 62 or 0 ) : "
+      );
+   const password = readline.question(
+        chalk.yellowBright(`[ ???? ] `) +
+          "Input Password : "
+      );
   while (true) {
     const Generate =
       faker.person.lastName() +
@@ -92,7 +100,7 @@ function headers(visitor, token, email) {
       "@gmail.com";
 
     const email = Generate;
-    const password = faker.internet.password();
+   
     const proxyauth =
       "http://oreotwistt:bebasszz_country-us@geo.iproyal.com:12321";
     let dataip;
@@ -139,10 +147,7 @@ function headers(visitor, token, email) {
           `Account :\n      - Email : ${Register.respon.auth.email}\n      - Status : ${Register.respon.auth.active}\n      - Password : ${password}\n`
       );
       fs.appendFileSync("accountregister.txt", `${email}|${password}\n`);
-      const Phone = readline.question(
-        chalk.yellowBright(`[ ???? ] `) +
-          "Input Number Not Include ( 62 or 0 ) : "
-      );
+     
       const Sendverify = await curl({
         endpoint:
           "https://api.vidio.com/api/profile/phone/send_verification_code",
