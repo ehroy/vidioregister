@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require("uuid");
 const fetch = require("node-fetch");
 const readline = require("readline-sync");
 const SMSActivate = require("./lib/index");
+const TURBO = require("./lib/turbo");
 const chalk = require("chalk");
 const delay = require("delay");
 const { HttpsProxyAgent } = require("https-proxy-agent");
@@ -99,8 +100,7 @@ function headers(visitor, token, email) {
 
     const email = Generate;
 
-    const proxyauth =
-      "http://oreotwistt:bebasszz_country-us@geo.iproyal.com:12321";
+    const proxyauth = ``;
     let dataip;
     do {
       try {
@@ -157,6 +157,7 @@ function headers(visitor, token, email) {
         ),
         proxy: proxyauth,
       });
+      console.log(Sendverify);
       if (Sendverify.respon.message === "Kode verifikasi Anda telah dikirim") {
         console.log(
           chalk.yellowBright(`[ INFO ] `) + Sendverify.respon.message
@@ -180,114 +181,269 @@ function headers(visitor, token, email) {
           );
           const SwitchNumber = readline.question(
             chalk.yellowBright(`[ ???? ] `) +
-              "Ganti Number With Sms Hub [y/t] :"
+              "Ganti Number With Sms Hub or Turbo Otp [y/t] :"
           );
           if (SwitchNumber.toLocaleLowerCase() === "y") {
-            let otpCode;
-            let data;
-            do {
-              const sms = new SMSActivate(apikey, "smshub");
-              const balance = await sms.getBalance();
-              console.log(
-                chalk.yellowBright(`[ INFO ] `) + `Saldo SMSHUB ${balance} руб`
-              );
-
-              try {
+            console.log(
+              `
+              [1] SMSHUB
+              [2] TURBO OTP
+              
+              `
+            );
+            const pilihanotp = readline.question(
+              chalk.yellowBright(`[ ???? ] `) + "Pilihan :"
+            );
+            switch (pilihanotp) {
+              case "1":
+                let otpCode;
+                let data;
+                let otp;
                 do {
-                  data = await sms.getNumber("fv", 6, "axis");
-                  // console.log(data);
-                } while (data === null);
-              } catch (err) {
-                console.log(
-                  chalk.yellowBright(`[ INFO ] `) +
-                    `Gagal Mendapatkan Nomer ${err}`
-                );
-                await delay(5000);
-                continue;
-              }
-              let { id, number } = data;
-              await sms.setStatus(id, 1);
-              console.log(
-                chalk.yellowBright(`[ INFO ] `) +
-                  `Try To Create With Number [ ${number} ]`
-              );
-              const PhoneNumber = number.toString().split("628")[1];
-              const SendverifySmsHub = await curl({
-                endpoint:
-                  "https://api.vidio.com/api/profile/phone/send_verification_code",
-                data: JSON.stringify({ phone: "8" + PhoneNumber }),
-                header: headers(
-                  visitor,
-                  Register.respon.auth.authentication_token,
-                  Register.respon.auth.email
-                ),
-                proxy: proxyauth,
-              });
-              if (
-                SendverifySmsHub.respon.message ===
-                "Kode verifikasi Anda telah dikirim"
-              ) {
-                console.log(
-                  chalk.yellowBright(`[ INFO ] `) +
-                    SendverifySmsHub.respon.message,
-                  "With Sms Hub"
-                );
-
-                let count = 0;
-                do {
-                  otpCode = await sms.getCode(id);
-                  // console.log(otpCode);
-                  if (count === 60) {
-                    await sms.setStatus(id, 8);
-                  }
-                  await delay(1000);
-                  count++;
-                  // console.log(otpCode);
-                } while (otpCode === "STATUS_WAIT_CODE");
-                if (otpCode === "STATUS_CANCEL") {
-                  console.log(
-                    chalk.yellowBright(`[ INFO ] `) + "Cancel Phone Number"
-                  );
-                  continue;
-                } else {
-                  otp = otpCode;
-                  console.log(
-                    chalk.yellowBright(`[ INFO ] `) + ("SMS OTP : " + otp)
-                  );
-                }
-                const VerifyOtpHub = await curl({
-                  endpoint: "https://api.vidio.com/api/profile/phone/verify",
-                  data: JSON.stringify({ verification_code: otpCode }),
-                  header: headers(
-                    visitor,
-                    Register.respon.auth.authentication_token,
-                    Register.respon.auth.email
-                  ),
-                  proxy: proxyauth,
-                });
-                if (
-                  VerifyOtpHub.respon.message ===
-                  "Verifikasi nomor telepon berhasil"
-                ) {
+                  const sms = new SMSActivate(apikey, "smshub");
+                  const balance = await sms.getBalance();
                   console.log(
                     chalk.yellowBright(`[ INFO ] `) +
-                      VerifyOtpHub.respon.message,
-                    "With Sms Hub"
+                      `Saldo SMSHUB ${balance} руб`
                   );
-                } else {
+
+                  try {
+                    do {
+                      data = await sms.getNumber("fv", 6, "axis");
+                      // console.log(data);
+                    } while (data === null);
+                  } catch (err) {
+                    console.log(
+                      chalk.yellowBright(`[ INFO ] `) +
+                        `Gagal Mendapatkan Nomer ${err}`
+                    );
+                    await delay(5000);
+                    continue;
+                  }
+                  let { id, number } = data;
+                  await sms.setStatus(id, 1);
                   console.log(
-                    chalk.redBright(`[ INFO ] `) + VerifyOtpHub.respon.message,
-                    "With Sms Hub"
+                    chalk.yellowBright(`[ INFO ] `) +
+                      `Try To Create With Number [ ${number} ]`
                   );
-                }
-              } else {
-                console.log(
-                  chalk.redBright(`[ INFO ] `) +
-                    SendverifySmsHub.respon.message,
-                  "With Sms Hub"
-                );
-              }
-            } while (otpCode === "STATUS_CANCEL");
+                  const PhoneNumber = number.toString().split("628")[1];
+                  const SendverifySmsHub = await curl({
+                    endpoint:
+                      "https://api.vidio.com/api/profile/phone/send_verification_code",
+                    data: JSON.stringify({ phone: "8" + PhoneNumber }),
+                    header: headers(
+                      visitor,
+                      Register.respon.auth.authentication_token,
+                      Register.respon.auth.email
+                    ),
+                    proxy: proxyauth,
+                  });
+                  if (
+                    SendverifySmsHub.respon.message ===
+                    "Kode verifikasi Anda telah dikirim"
+                  ) {
+                    console.log(
+                      chalk.yellowBright(`[ INFO ] `) +
+                        SendverifySmsHub.respon.message,
+                      "With Sms Hub"
+                    );
+
+                    let count = 0;
+                    do {
+                      otpCode = await sms.getCode(id);
+                      // console.log(otpCode);
+                      if (count === 60) {
+                        await sms.setStatus(id, 8);
+                      }
+                      await delay(1000);
+                      count++;
+                      // console.log(otpCode);
+                    } while (otpCode === "STATUS_WAIT_CODE");
+                    if (otpCode === "STATUS_CANCEL") {
+                      console.log(
+                        chalk.yellowBright(`[ INFO ] `) + "Cancel Phone Number"
+                      );
+                      continue;
+                    } else {
+                      otp = otpCode;
+                      console.log(
+                        chalk.yellowBright(`[ INFO ] `) + ("SMS OTP : " + otp)
+                      );
+                    }
+                    const VerifyOtpHub = await curl({
+                      endpoint:
+                        "https://api.vidio.com/api/profile/phone/verify",
+                      data: JSON.stringify({ verification_code: otpCode }),
+                      header: headers(
+                        visitor,
+                        Register.respon.auth.authentication_token,
+                        Register.respon.auth.email
+                      ),
+                      proxy: proxyauth,
+                    });
+                    if (
+                      VerifyOtpHub.respon.message ===
+                      "Verifikasi nomor telepon berhasil"
+                    ) {
+                      console.log(
+                        chalk.yellowBright(`[ INFO ] `) +
+                          VerifyOtpHub.respon.message,
+                        "With Sms Hub"
+                      );
+                      otpCode === "SUKSES";
+                    } else {
+                      console.log(
+                        chalk.redBright(`[ INFO ] `) +
+                          VerifyOtpHub.respon.message,
+                        "With Sms Hub"
+                      );
+                    }
+                  } else {
+                    console.log(
+                      chalk.redBright(`[ INFO ] `) +
+                        SendverifySmsHub.respon.message,
+                      "With Sms Hub"
+                    );
+                  }
+                } while (otpCode === "STATUS_CANCEL");
+                break;
+
+              case "2":
+                let otpCodeturbo;
+                let dataTurbo;
+                const sms = new TURBO(apikey);
+                do {
+                  do {
+                    try {
+                      await sleep(1000);
+                      dataTurbo = await sms.GetNumber("148");
+                    } catch (err) {
+                      console.log(
+                        chalk.yellowBright(`[ INFO ] `) +
+                          chalk.redBright(`Gagal Mendapatkan Nomer ${err}`)
+                      );
+                      await sleep(5000);
+                      continue;
+                    }
+                    await sleep(5000);
+                  } while (dataTurbo.success === false);
+
+                  let { order_id, number } = dataTurbo.data.data;
+
+                  console.log(
+                    chalk.yellowBright(`[ INFO ] `) +
+                      chalk.greenBright(
+                        `Try To Create With Number [ ${number} ]`
+                      )
+                  );
+                  console.log(
+                    chalk.yellowBright(`[ INFO ] `) +
+                      chalk.greenBright("Request OTP Phone ")
+                  );
+                  const PhoneNumber = number.toString().split("08")[1];
+                  const SendverifySmsHub = await curl({
+                    endpoint:
+                      "https://api.vidio.com/api/profile/phone/send_verification_code",
+                    data: JSON.stringify({ phone: "8" + PhoneNumber }),
+                    header: headers(
+                      visitor,
+                      Register.respon.auth.authentication_token,
+                      Register.respon.auth.email
+                    ),
+                    proxy: proxyauth,
+                  });
+                  if (
+                    SendverifySmsHub.respon.message ===
+                    "Kode verifikasi Anda telah dikirim"
+                  ) {
+                    console.log(
+                      chalk.yellowBright(`[ INFO ] `) +
+                        SendverifySmsHub.respon.message,
+                      "With Sms Hub"
+                    );
+
+                    let otpCodeTurbo;
+                    let count = 0;
+                    try {
+                      do {
+                        try {
+                          otpCodeTurbo = await sms.GetMessage(order_id);
+                          // console.log(otpCode.data.data);
+                          if (count === 60) {
+                            await sms.GetCancel(order_id);
+                          }
+                          await sleep(1000);
+                          count++;
+                        } catch (error) {
+                          break;
+                        }
+                      } while (otpCodeTurbo.data.data[0].sms === null);
+                    } catch (error) {
+                      await sms.GetCancel(order_id);
+                      console.log(
+                        chalk.yellowBright(`[ INFO ] `) +
+                          chalk.redBright("Skip Phone Number")
+                      );
+                      continue;
+                    }
+                    if (otpCodeTurbo.data.data[0].status === "0") {
+                      console.log(
+                        chalk.yellowBright(`[ INFO ] `) +
+                          chalk.redBright("Cancel Phone Number")
+                      );
+                      // await sms.GetCancel(order_id);
+                      continue;
+                    } else {
+                      const fixotp = otpCodeturbo.data.data[0].sms;
+                      const parse = JSON.parse(fixotp);
+                      var otp2 = parse[0].sms
+                        .split("vidio.com Anda adalah ")[1]
+                        .split(".")[0];
+                      console.log(
+                        chalk.yellowBright(`[ INFO ] `) +
+                          chalk.greenBright("SMS OTP : " + otp2)
+                      );
+                    }
+                    const VerifyOtpHub = await curl({
+                      endpoint:
+                        "https://api.vidio.com/api/profile/phone/verify",
+                      data: JSON.stringify({ verification_code: otp2 }),
+                      header: headers(
+                        visitor,
+                        Register.respon.auth.authentication_token,
+                        Register.respon.auth.email
+                      ),
+                      proxy: proxyauth,
+                    });
+                    if (
+                      VerifyOtpHub.respon.message ===
+                      "Verifikasi nomor telepon berhasil"
+                    ) {
+                      console.log(
+                        chalk.yellowBright(`[ INFO ] `) +
+                          VerifyOtpHub.respon.message,
+                        "With Turbo Otp"
+                      );
+                    } else {
+                      console.log(
+                        chalk.redBright(`[ INFO ] `) +
+                          VerifyOtpHub.respon.message,
+                        "With Turbo Otp"
+                      );
+                    }
+                  } else {
+                    console.log(
+                      chalk.redBright(`[ INFO ] `) +
+                        SendverifySmsHub.respon.message,
+                      "With Sms Hub"
+                    );
+                  }
+                } while (otpCodeturbo.data.data[0].status === "0");
+                break;
+
+              default:
+                break;
+            }
           } else {
             console.log(
               chalk.redBright(`[ INFO ] `) + "Skip Verify With Sms Hub"
