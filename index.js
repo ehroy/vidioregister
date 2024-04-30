@@ -8,7 +8,10 @@ const delay = require("delay");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 const { faker } = require("@faker-js/faker");
 const fs = require("fs-extra");
+const sleep = require("delay");
 const apikey = "";
+const apikeyTurbo = "";
+
 const curl = ({ endpoint, data, header, proxy }) =>
   new Promise((resolve, reject) => {
     let fetchData = {
@@ -157,7 +160,7 @@ function headers(visitor, token, email) {
         ),
         proxy: proxyauth,
       });
-      console.log(Sendverify);
+      // console.log(Sendverify);
       if (Sendverify.respon.message === "Kode verifikasi Anda telah dikirim") {
         console.log(
           chalk.yellowBright(`[ INFO ] `) + Sendverify.respon.message
@@ -309,9 +312,12 @@ function headers(visitor, token, email) {
                 break;
 
               case "2":
-                let otpCodeturbo;
                 let dataTurbo;
-                const sms = new TURBO(apikey);
+                let smsasu;
+                let otpCodeTurbo;
+                let count = 0;
+                let otp2;
+                const sms = new TURBO(apikeyTurbo);
                 do {
                   do {
                     try {
@@ -362,8 +368,6 @@ function headers(visitor, token, email) {
                       "With Sms Hub"
                     );
 
-                    let otpCodeTurbo;
-                    let count = 0;
                     try {
                       do {
                         try {
@@ -377,7 +381,9 @@ function headers(visitor, token, email) {
                         } catch (error) {
                           break;
                         }
+                        // console.log(otpCodeTurbo.data.data[0]);
                       } while (otpCodeTurbo.data.data[0].sms === null);
+                      smsasu = otpCodeTurbo.data.data[0];
                     } catch (error) {
                       await sms.GetCancel(order_id);
                       console.log(
@@ -394,42 +400,56 @@ function headers(visitor, token, email) {
                       // await sms.GetCancel(order_id);
                       continue;
                     } else {
-                      const fixotp = otpCodeturbo.data.data[0].sms;
-                      const parse = JSON.parse(fixotp);
-                      var otp2 = parse[0].sms
-                        .split("vidio.com Anda adalah ")[1]
-                        .split(".")[0];
-                      console.log(
-                        chalk.yellowBright(`[ INFO ] `) +
-                          chalk.greenBright("SMS OTP : " + otp2)
-                      );
+                      try {
+                        const parse = JSON.parse(smsasu.sms);
+                        otp2 = parse[0].sms
+                          .split("vidio.com Anda adalah ")[1]
+                          .split(".")[0];
+                        console.log(
+                          chalk.yellowBright(`[ INFO ] `) +
+                            chalk.greenBright("SMS OTP : " + otp2)
+                        );
+                      } catch (error) {
+                        console.log(error);
+                        console.log(
+                          chalk.yellowBright(`[ INFO ] `) +
+                            chalk.redBright("Cancel Phone Number")
+                        );
+                      }
                     }
-                    const VerifyOtpHub = await curl({
-                      endpoint:
-                        "https://api.vidio.com/api/profile/phone/verify",
-                      data: JSON.stringify({ verification_code: otp2 }),
-                      header: headers(
-                        visitor,
-                        Register.respon.auth.authentication_token,
-                        Register.respon.auth.email
-                      ),
-                      proxy: proxyauth,
-                    });
-                    if (
-                      VerifyOtpHub.respon.message ===
-                      "Verifikasi nomor telepon berhasil"
-                    ) {
+                    if (!otp2) {
                       console.log(
                         chalk.yellowBright(`[ INFO ] `) +
-                          VerifyOtpHub.respon.message,
-                        "With Turbo Otp"
+                          chalk.redBright("Retry Get Phone Again")
                       );
                     } else {
-                      console.log(
-                        chalk.redBright(`[ INFO ] `) +
-                          VerifyOtpHub.respon.message,
-                        "With Turbo Otp"
-                      );
+                      const VerifyOtpHub = await curl({
+                        endpoint:
+                          "https://api.vidio.com/api/profile/phone/verify",
+                        data: JSON.stringify({ verification_code: otp2 }),
+                        header: headers(
+                          visitor,
+                          Register.respon.auth.authentication_token,
+                          Register.respon.auth.email
+                        ),
+                        proxy: proxyauth,
+                      });
+                      if (
+                        VerifyOtpHub.respon.message ===
+                        "Verifikasi nomor telepon berhasil"
+                      ) {
+                        console.log(
+                          chalk.yellowBright(`[ INFO ] `) +
+                            VerifyOtpHub.respon.message,
+                          "With Turbo Otp"
+                        );
+                      } else {
+                        console.log(
+                          chalk.redBright(`[ INFO ] `) +
+                            VerifyOtpHub.respon.message,
+                          "With Turbo Otp"
+                        );
+                      }
                     }
                   } else {
                     console.log(
@@ -438,7 +458,7 @@ function headers(visitor, token, email) {
                       "With Sms Hub"
                     );
                   }
-                } while (otpCodeturbo.data.data[0].status === "0");
+                } while (!otp2);
                 break;
 
               default:
